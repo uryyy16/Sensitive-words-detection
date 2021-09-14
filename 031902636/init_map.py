@@ -56,7 +56,7 @@ PINYIN_LIST = [
 Pinyin_alphabet_map = {}
 
 
-def init_two_map():
+def pinyin_alphabet_map():
     map_value = 1
     for i in PINYIN_LIST:
         Pinyin_alphabet_map[i] = map_value
@@ -68,7 +68,7 @@ def init_two_map():
 
 
 def test():
-    init_two_map()
+    pinyin_alphabet_map()
     for i in PINYIN_LIST:
         print(Pinyin_alphabet_map[i])
     for j in ALPHABET_LIST:
