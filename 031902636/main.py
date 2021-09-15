@@ -20,6 +20,7 @@ class Sensitive_words:
 
     def possible_sensitive_words(self, word):
         global map_value
+        # 单个违禁词的所有可能形式的映射值，如“fuck”：[[416, 430, 414, 421]]
         per_word_list = []
         word = list(word)
         for i in range(len(word)):
@@ -31,29 +32,34 @@ class Sensitive_words:
                 word_list = []
                 pinyin = pypinyin.lazy_pinyin(word[i])[0]
                 # 全拼
-                word_list.append([pinyin])
-                word_list.append(list(pinyin))
+                word_list.append([pinyin_alphabet_map[pinyin]])
+                li = list(pinyin)
+                for each_i in range(len(li)):
+                    li[each_i] = pinyin_alphabet_map[li[each_i]]
+                word_list.append(li)
                 # 首字母
-                word_list.append([pinyin[0]])
+                word_list.append([pinyin_alphabet_map[pinyin[0]]])
                 # 偏旁拆分
                 if Chinese_spilt.is_breakable(word[i]):
                     parts = list(Chinese_spilt.get_split_part(word[i]))
-                    word_list.append(parts)
-                    for part in parts:
-                        if part not in Chinese_split_map:
-                            Chinese_split_map[part] = map_value
+                    # word_list.append(parts)
+                    for part_i in range(len(parts)):
+                        if parts[part_i] not in Chinese_split_map:
+                            Chinese_split_map[parts[part_i]] = map_value
                             map_value += 1
+                        parts[part_i] = Chinese_split_map[parts[part_i]]
+                    word_list.append(parts)
                 word[i] = word_list
-            else:
-                pass
         for per in word:
             # print(per)
             # 英文
             if not isinstance(per, list):
                 if len(per_word_list) == 0:
-                    per_word_list.append(list(per))
+                    li = list()
+                    li.append(pinyin_alphabet_map[per])
+                    per_word_list.append(li)
                 else:
-                    per_word_list[0].append(per)
+                    per_word_list[0].append(pinyin_alphabet_map[per])
             # 汉字
             else:
                 if len(per_word_list) == 0:
@@ -69,14 +75,7 @@ class Sensitive_words:
                                 k.append(j)
                         new_list = new_list + list_copy
                     per_word_list = new_list
-        # return per_word_list
-        for i in range(len(per_word_list)):
-            li = per_word_list[i]
-            for j in range(len(li)):
-                if li[j] in pinyin_alphabet_map:
-                    per_word_list[i][j] = pinyin_alphabet_map[li[j]]
-                elif li[j] in Chinese_split_map:
-                    per_word_list[i][j] = Chinese_split_map[li[j]]
+        # print(per_word_list)
         return per_word_list
 
     def read_sensitive_words(self, filename):
@@ -89,8 +88,11 @@ class Sensitive_words:
                     line = line.replace('\r', '')
                     line = line.lower()
                     # print(line, word_index)
-                    self.sensitive_words_list.append((self.possible_sensitive_words(line), word_index))
+                    li = self.possible_sensitive_words(line)
+                    for i in li:
+                        self.sensitive_words_list.append((i, word_index))
                     word_index += 1
+                # print(self.sensitive_words_list)
         except IOError:
             print("Error: 没有找到文件或读取文件失败")
 
