@@ -13,6 +13,7 @@ pinyin_alphabet_map['#'] = 0
 file_words = './words.txt'
 file_org = './org.txt'
 file_ans = './ans.txt'
+
 original_sensitive_words = []
 
 
@@ -20,6 +21,7 @@ class Sensitive_words:
     def __init__(self):
         # [[num1,num2,num3,……], word_index]
         self.sensitive_words_list = []
+        # [num1,num2,num3,……]
         self.per_word_list = []
 
     def possible_sensitive_words(self, word):
@@ -27,9 +29,7 @@ class Sensitive_words:
         self.per_word_list = []
         word = list(word)
         for i in range(len(word)):
-            # print(word[i])
             # '法' ’轮‘ ’功‘
-            # per = word[i]
             # 汉字
             if (u'\u4e00' <= word[i] <= u'\u9fa5') or (u'\u3400' <= word[i] <= u'\u4db5'):
                 word_list = []
@@ -44,7 +44,6 @@ class Sensitive_words:
                 word_list.append([pinyin_alphabet_map[pinyin[0]]])
                 word[i] = word_list
         for per in word:
-            # print(per)
             # 英文
             if not isinstance(per, list):
                 if len(self.per_word_list) == 0:
@@ -109,32 +108,24 @@ class Text:
         self.sensitive_words_list = []
         self.original_line = ""
         self.total = 0
+
         # 行数， 敏感词下标， 原始文本
         self.text_ans: [int, int, string] = []
+
         self.last_right = -1
         self.last_line = -1
-        # self.words = words
-        # for word in words:
-        #     self.insert(word)
-        # self.ac_automation()
+
         sensitive_word = Sensitive_words()
         self.sensitive_words_list = sensitive_word.read_sensitive_words(file_words)
         self.insert(self.sensitive_words_list)
         self.ac_automation()
 
     def insert(self, sequence):
-        """
-        基操，插入一个字符串
-        :param sequence: 字符串
-        :return:
-        """
         # print(sequence)
         for item_tuple in sequence:
-            # print(item_tuple[0])
             cur_node = self.root
             for i in range(len(item_tuple[0])):
                 per = item_tuple[0][i]
-                # print(per)
                 if per not in cur_node.children:
                     # 插入结点
                     child = TrieNode(value=per)
@@ -144,23 +135,16 @@ class Text:
                     cur_node = cur_node.children[per]
             cur_node.tail = item_tuple[1] + 1
 
+    # 构建失败路径
     def ac_automation(self):
-        """
-        构建失败路径
-        :return:
-        """
         queue = [self.root]
         # BFS遍历字典树
-        # print(len(queue))
         while len(queue):
-            # print(len(queue))
             temp_node = queue[0]
-            # print(queue[0].value)
             # 取出队首元素
             queue.remove(temp_node)
             for value in temp_node.children.values():
                 # 根的子结点fail指向根自己
-                # print(value.value)
                 if temp_node == self.root:
                     value.fail = self.root
                 else:
@@ -179,8 +163,9 @@ class Text:
                 # 将当前结点的所有子结点加到队列中
                 queue.append(value)
 
-    def answer(self, left, right, index, line):
-        # print(line, left, right, index)
+    # 匹配到的违禁词在原文本中的左端点，右端点，对应违禁词的下标，查找到的行数
+    def get_answer(self, left, right, index, line):
+        # 判断是否与前一个违禁词嵌套出现，如果是，则此次检测到的违禁词不需要放入text_ans
         if line != self.last_line or line == self.last_line and left > self.last_right:
             self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
             self.total += 1
@@ -250,7 +235,7 @@ class Text:
                 if temp.tail:
                     # rst[self.words[temp.tail - 1]].append((start_index, i))
                     # print(line_index)
-                    self.answer(start_index, i, temp.tail - 1, line_index + 1)
+                    self.get_answer(start_index, i, temp.tail - 1, line_index + 1)
                 temp = temp.fail
 
 
