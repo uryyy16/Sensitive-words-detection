@@ -1,8 +1,6 @@
-ALPHABET_LIST = [
+PINYIN_ALPHABET_LIST = [
     'b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-    'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
-]
-PINYIN_LIST = [
+    'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
     'a', 'o', 'e', 'ba', 'bo', 'bi', 'bu', 'pa', 'po', 'pi', 'pu',
     'ma', 'mo', 'me', 'mi', 'mu', 'fa', 'fo', 'fu', 'da', 'de',
     'di', 'du', 'ta', 'te', 'ti', 'tu', 'na', 'ne', 'ni', 'nu',
@@ -58,21 +56,16 @@ Pinyin_alphabet_map = {}
 
 def pinyin_alphabet_map():
     map_value = 1
-    for i in PINYIN_LIST:
+    for i in PINYIN_ALPHABET_LIST:
         Pinyin_alphabet_map[i] = map_value
         map_value += 1
-    for j in ALPHABET_LIST:
-        Pinyin_alphabet_map[j] = map_value
-        map_value += 1
-    return map_value, Pinyin_alphabet_map
+    return Pinyin_alphabet_map
 
 
 def test():
     pinyin_alphabet_map()
-    for i in PINYIN_LIST:
+    for i in PINYIN_ALPHABET_LIST:
         print(Pinyin_alphabet_map[i])
-    for j in ALPHABET_LIST:
-        print(Pinyin_alphabet_map[j])
 
 
 if __name__ == '__main__':
