@@ -13,13 +13,13 @@ pinyin_alphabet_map = init_map.pinyin_alphabet_map()
 pinyin_alphabet_map['#'] = 0
 # print(pinyin_alphabet_map)
 
-# file_words = './words.txt'
-# file_org = './org.txt'
-# file_ans = './ans.txt'
+file_words = './words.txt'
+file_org = './org.txt'
+file_ans = './ans.txt'
 
-file_words = sys.argv[1]
-file_org = sys.argv[2]
-file_ans = sys.argv[3]
+# file_words = sys.argv[1]
+# file_org = sys.argv[2]
+# file_ans = sys.argv[3]
 
 original_sensitive_words = []
 
@@ -107,8 +107,9 @@ class Sensitive_words:
             # 直接退出程序，防止返回值为None引起错误
             sys.exit()
         else:
-            words.close()
             return self.sensitive_words_list
+        finally:
+            words.close()
 
 
 # Trie树节点类
@@ -218,6 +219,8 @@ class Text:
                     print('Line{}: <{}> {}'.format(each[0], each[1], each[2]), file=ans)
         except IOError:
             print("Error: 没有找到文件或写入文件失败")
+        finally:
+            ans.close()
 
     # 读入待检测文本
     def read_text(self, filename):
@@ -244,7 +247,7 @@ class Text:
                     line_index += 1
         except OSError:
             print("Error: 没有找到文件或读取文件失败")
-        else:
+        finally:
             org.close()
 
     # 对每一行文本进行匹配
