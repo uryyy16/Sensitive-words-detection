@@ -17,7 +17,7 @@ class MyTestCase(unittest.TestCase):
     # 测试将符号改为#并合并被拆开的汉字
     def test_read_text(self):
         t = main.Text(file_words)
-        ans = '法#轮#功#法轮#功邪#教#'
+        ans = '法#一#功#法一#功邪#教#'
         self.assertEqual(t.read_text(file_org), ans)
 
 
