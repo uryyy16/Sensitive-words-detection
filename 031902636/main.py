@@ -3,9 +3,12 @@ import string
 import pypinyin
 import copy
 import re
+import sys
 
 import init_map
+import Chinese_split
 
+Chinese_split_map = {}
 pinyin_alphabet_map = init_map.pinyin_alphabet_map()
 pinyin_alphabet_map['#'] = 0
 # print(pinyin_alphabet_map)
@@ -13,6 +16,10 @@ pinyin_alphabet_map['#'] = 0
 file_words = './words.txt'
 file_org = './org.txt'
 file_ans = './ans.txt'
+
+# file_words = sys.argv[1]
+# file_org = sys.argv[2]
+# file_ans = sys.argv[3]
 
 original_sensitive_words = []
 
@@ -42,6 +49,10 @@ class Sensitive_words:
                 word_list.append(li)
                 # 首字母
                 word_list.append([pinyin_alphabet_map[pinyin[0]]])
+                # 偏旁拆分
+                if Chinese_split.is_breakable(word[i]):
+                    parts = list(Chinese_split.get_split_part(word[i]))
+                    Chinese_split_map[(parts[0], parts[1])] = word[i]
                 word[i] = word_list
         for per in word:
             # 英文
@@ -83,8 +94,10 @@ class Sensitive_words:
                         self.sensitive_words_list.append((each, word_index))
                     word_index += 1
                 # print(self.sensitive_words_list)
-        except IOError:
+                # return self.sensitive_words_list
+        except OSError:
             print("Error: 没有找到文件或读取文件失败")
+            sys.exit()
         else:
             return self.sensitive_words_list
 
@@ -169,6 +182,7 @@ class Text:
         if line != self.last_line or line == self.last_line and left > self.last_right:
             self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
             self.total += 1
+        # 更新
         self.last_right = right
         self.last_line = line
 
@@ -192,9 +206,15 @@ class Text:
                     line = line.replace('\n', '')
                     line = re.sub(u'([^\u3400-\u4db5\u4e00-\u9fa5a-zA-Z])', '#', line)
                     line = line.lower()
+                    for i in range(len(line) - 1):
+                        if (line[i], line[i+1]) in Chinese_split_map:
+                            li = list(line)
+                            li[i] = Chinese_split_map[(line[i], line[i+1])]
+                            li[i+1] = '#'
+                            line = ''.join(li)
                     self.search(line, line_index)
                     line_index += 1
-        except IOError:
+        except OSError:
             print("Error: 没有找到文件或读取文件失败")
 
     def search(self, text, line_index):
