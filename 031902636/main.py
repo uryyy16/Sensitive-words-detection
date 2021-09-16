@@ -13,13 +13,13 @@ pinyin_alphabet_map = init_map.pinyin_alphabet_map()
 pinyin_alphabet_map['#'] = 0
 # print(pinyin_alphabet_map)
 
-file_words = './words.txt'
-file_org = './org.txt'
-file_ans = './ans.txt'
+# file_words = './words.txt'
+# file_org = './org.txt'
+# file_ans = './ans.txt'
 
-# file_words = sys.argv[1]
-# file_org = sys.argv[2]
-# file_ans = sys.argv[3]
+file_words = sys.argv[1]
+file_org = sys.argv[2]
+file_ans = sys.argv[3]
 
 original_sensitive_words = []
 
@@ -50,6 +50,8 @@ class Sensitive_words:
                 # 首字母
                 word_list.append([pinyin_alphabet_map[pinyin[0]]])
                 # 偏旁拆分
+                # 如果能拆分，将拆分后偏旁部首以元组形式映射到Chinese_split_map,value值为拆分前汉字
+                #  Chinese_split_map[('氵', ‘去’)] = '法'
                 if Chinese_split.is_breakable(word[i]):
                     parts = list(Chinese_split.get_split_part(word[i]))
                     Chinese_split_map[(parts[0], parts[1])] = word[i]
@@ -178,10 +180,13 @@ class Text:
 
     # 匹配到的违禁词在原文本中的左端点，右端点，对应违禁词的下标，查找到的行数
     def get_answer(self, left, right, index, line):
-        # 判断是否与前一个违禁词嵌套出现，如果是，则此次检测到的违禁词不需要放入text_ans
+        # 判断是否与前一个违禁词嵌套出现，如果是，将上次获取的文本弹出
         if line != self.last_line or line == self.last_line and left > self.last_right:
             self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
             self.total += 1
+        else:
+            self.text_ans.pop()
+            self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
         # 更新
         self.last_right = right
         self.last_line = line
@@ -207,10 +212,10 @@ class Text:
                     line = re.sub(u'([^\u3400-\u4db5\u4e00-\u9fa5a-zA-Z])', '#', line)
                     line = line.lower()
                     for i in range(len(line) - 1):
-                        if (line[i], line[i+1]) in Chinese_split_map:
+                        if (line[i], line[i + 1]) in Chinese_split_map:
                             li = list(line)
-                            li[i] = Chinese_split_map[(line[i], line[i+1])]
-                            li[i+1] = '#'
+                            li[i] = Chinese_split_map[(line[i], line[i + 1])]
+                            li[i + 1] = '#'
                             line = ''.join(li)
                     self.search(line, line_index)
                     line_index += 1
