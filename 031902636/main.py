@@ -107,6 +107,7 @@ class Sensitive_words:
             # 直接退出程序，防止返回值为None引起错误
             sys.exit()
         else:
+            # print(self.sensitive_words_list)
             return self.sensitive_words_list
         finally:
             words.close()
@@ -126,7 +127,7 @@ class TrieNode(object):
 
 
 class Text:
-    def __init__(self):
+    def __init__(self, filename):
         # 根节点
         self.root = TrieNode()
         self.sensitive_words_list = []
@@ -142,7 +143,7 @@ class Text:
 
         # 创建实例化对象并调用函数
         sensitive_word = Sensitive_words()
-        self.sensitive_words_list = sensitive_word.read_sensitive_words(file_words)
+        self.sensitive_words_list = sensitive_word.read_sensitive_words(filename)
         self.insert(self.sensitive_words_list)
         self.ac_automation()
 
@@ -283,7 +284,7 @@ class Text:
 
 
 def main():
-    new_text = Text()
+    new_text = Text(file_words)
     new_text.read_text(file_org)
     new_text.output(file_ans)
 
