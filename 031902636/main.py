@@ -31,10 +31,12 @@ class Sensitive_words:
         # [num1,num2,num3,……]
         self.per_word_list = []
 
+    # 找到敏感词的所有可能形式
     def possible_sensitive_words(self, word):
-        # 单个违禁词的所有可能形式的映射值，如“fuck”：[[416, 430, 414, 421]]
+        # 单个敏感词的所有可能形式的映射值，如“fuck”：[[416, 430, 414, 421]]
         self.per_word_list = []
         word = list(word)
+
         for i in range(len(word)):
             # '法' ’轮‘ ’功‘
             # 汉字
@@ -53,8 +55,9 @@ class Sensitive_words:
                 # 如果能拆分，将拆分后偏旁部首以元组形式映射到Chinese_split_map,value值为拆分前汉字
                 #  Chinese_split_map[('氵', ‘去’)] = '法'
                 if Chinese_split.is_breakable(word[i]):
-                    parts = list(Chinese_split.get_split_part(word[i]))
-                    Chinese_split_map[(parts[0], parts[1])] = word[i]
+                    parts = Chinese_split.get_split_part(word[i])
+                    Chinese_split_map[parts] = word[i]
+
                 word[i] = word_list
         for per in word:
             # 英文
@@ -81,6 +84,7 @@ class Sensitive_words:
                         new_list = new_list + list_copy
                     self.per_word_list = new_list
 
+    # 按行读入敏感词并处理
     def read_sensitive_words(self, filename):
         try:
             with open(filename, 'r+', encoding='utf-8') as words:
@@ -90,20 +94,24 @@ class Sensitive_words:
                     line = line.replace('\n', '')
                     line = line.replace('\r', '')
                     line = line.lower()
+
                     original_sensitive_words.append(line)
+
                     self.possible_sensitive_words(line)
                     for each in self.per_word_list:
                         self.sensitive_words_list.append((each, word_index))
                     word_index += 1
                 # print(self.sensitive_words_list)
-                # return self.sensitive_words_list
         except OSError:
             print("Error: 没有找到文件或读取文件失败")
+            # 直接退出程序，防止返回值为None引起错误
             sys.exit()
         else:
+            words.close()
             return self.sensitive_words_list
 
 
+# Trie树节点类
 class TrieNode(object):
     def __init__(self, value=None):
         # 值
@@ -127,14 +135,17 @@ class Text:
         # 行数， 敏感词下标， 原始文本
         self.text_ans: [int, int, string] = []
 
+        # 记录上一个敏感词出现的行数和右端点
         self.last_right = -1
         self.last_line = -1
 
+        # 创建实例化对象并调用函数
         sensitive_word = Sensitive_words()
         self.sensitive_words_list = sensitive_word.read_sensitive_words(file_words)
         self.insert(self.sensitive_words_list)
         self.ac_automation()
 
+    # 构建Trie树
     def insert(self, sequence):
         # print(sequence)
         for item_tuple in sequence:
@@ -182,6 +193,9 @@ class Text:
     def get_answer(self, left, right, index, line):
         # 判断是否与前一个违禁词嵌套出现，如果是，将上次获取的文本弹出
         if line != self.last_line or line == self.last_line and left > self.last_right:
+            if right + 1 < len(self.original_line):
+                if (self.original_line[right], self.original_line[right+1]) in Chinese_split_map:
+                    right += 1
             self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
             self.total += 1
         else:
@@ -191,6 +205,7 @@ class Text:
         self.last_right = right
         self.last_line = line
 
+    # 输出
     def output(self, filename):
         try:
             with open(filename, 'w+', encoding='utf-8') as ans:
@@ -200,6 +215,7 @@ class Text:
         except IOError:
             print("Error: 没有找到文件或写入文件失败")
 
+    # 读入待检测文本
     def read_text(self, filename):
         try:
             with open(filename, 'r+', encoding='utf-8') as org:
@@ -211,27 +227,26 @@ class Text:
                     line = line.replace('\n', '')
                     line = re.sub(u'([^\u3400-\u4db5\u4e00-\u9fa5a-zA-Z])', '#', line)
                     line = line.lower()
+
+                    # 如果出现被拆分开的敏感词，将其合并
                     for i in range(len(line) - 1):
                         if (line[i], line[i + 1]) in Chinese_split_map:
                             li = list(line)
                             li[i] = Chinese_split_map[(line[i], line[i + 1])]
                             li[i + 1] = '#'
                             line = ''.join(li)
+
                     self.search(line, line_index)
                     line_index += 1
         except OSError:
             print("Error: 没有找到文件或读取文件失败")
+        else:
+            org.close()
 
+    # 对每一行文本进行匹配
     def search(self, text, line_index):
-        # print(text)
-        """
-        模式匹配
-        :param line_index:
-        :param self:
-        :param text: 长文本
-        :return:
-        """
         p = self.root
+
         # 记录匹配起始位置下标
         start_index = 0
         for i in range(len(text)):
@@ -242,9 +257,7 @@ class Text:
             pinyin_code = pinyin_alphabet_map[pypinyin.lazy_pinyin(single_char)[0]]
             while pinyin_code not in p.children and p is not self.root:
                 p = p.fail
-            # 有一点瑕疵，原因在于匹配子串的时候，若字符串中部分字符由两个匹配词组成，此时后一个词的前缀下标不会更新
-            # 这是由于KMP算法本身导致的，目前与下文循环寻找所有匹配词存在冲突
-            # 但是问题不大，因为其标记的位置均为匹配成功的字符
+
             if pinyin_code in p.children and p is self.root:
                 start_index = i
             # 若找到匹配成功的字符结点，则指向那个结点，否则指向根结点
@@ -258,8 +271,6 @@ class Text:
                 # 尾标志为0不处理，但是tail需要-1从而与敏感词字典下标一致
                 # 循环原因在于，有些词本身只是另一个词的后缀，也需要辨识出来
                 if temp.tail:
-                    # rst[self.words[temp.tail - 1]].append((start_index, i))
-                    # print(line_index)
                     self.get_answer(start_index, i, temp.tail - 1, line_index + 1)
                 temp = temp.fail
 
