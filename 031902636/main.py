@@ -108,9 +108,8 @@ class Sensitive_words:
             sys.exit()
         else:
             # print(self.sensitive_words_list)
-            return self.sensitive_words_list
-        finally:
             words.close()
+            return self.sensitive_words_list
 
 
 # Trie树节点类
@@ -220,7 +219,7 @@ class Text:
                     print('Line{}: <{}> {}'.format(each[0], each[1], each[2]), file=ans)
         except IOError:
             print("Error: 没有找到文件或写入文件失败")
-        finally:
+        else:
             ans.close()
 
     # 读入待检测文本
@@ -246,9 +245,9 @@ class Text:
 
                     self.search(line, line_index)
                     line_index += 1
-        except OSError:
+        except IOError:
             print("Error: 没有找到文件或读取文件失败")
-        finally:
+        else:
             org.close()
 
     # 对每一行文本进行匹配
