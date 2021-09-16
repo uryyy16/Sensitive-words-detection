@@ -13,13 +13,13 @@ pinyin_alphabet_map = init_map.pinyin_alphabet_map()
 pinyin_alphabet_map['#'] = 0
 # print(pinyin_alphabet_map)
 
-file_words = './words.txt'
-file_org = './org.txt'
-file_ans = './ans.txt'
+# file_words = './words.txt'
+# file_org = './org.txt'
+# file_ans = './ans.txt'
 
-# file_words = sys.argv[1]
-# file_org = sys.argv[2]
-# file_ans = sys.argv[3]
+file_words = sys.argv[1]
+file_org = sys.argv[2]
+file_ans = sys.argv[3]
 
 original_sensitive_words = []
 
