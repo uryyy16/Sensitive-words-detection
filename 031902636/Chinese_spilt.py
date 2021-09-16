@@ -1694,5 +1694,3 @@ def is_breakable(c):
 def get_split_part(c):
     if is_breakable(c):
         return CHINESE_SPLIT_MAP[c]
-    else:
-        return False
