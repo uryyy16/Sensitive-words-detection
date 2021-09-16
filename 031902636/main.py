@@ -13,13 +13,13 @@ pinyin_alphabet_map = init_map.pinyin_alphabet_map()
 pinyin_alphabet_map['#'] = 0
 # print(pinyin_alphabet_map)
 
-# file_words = './words.txt'
-# file_org = './org.txt'
-# file_ans = './ans.txt'
+file_words = './words.txt'
+file_org = './org.txt'
+file_ans = './ans.txt'
 
-file_words = sys.argv[1]
-file_org = sys.argv[2]
-file_ans = sys.argv[3]
+# file_words = sys.argv[1]
+# file_org = sys.argv[2]
+# file_ans = sys.argv[3]
 
 original_sensitive_words = []
 
@@ -193,9 +193,13 @@ class Text:
     def get_answer(self, left, right, index, line):
         # 判断是否与前一个违禁词嵌套出现，如果是，将上次获取的文本弹出
         if line != self.last_line or line == self.last_line and left > self.last_right:
+            # 如果敏感文本的最后一个字经过拆分，则右端点+1
             if right + 1 < len(self.original_line):
-                if (self.original_line[right], self.original_line[right+1]) in Chinese_split_map:
-                    right += 1
+                fir = self.original_line[right]
+                sec = self.original_line[right + 1]
+                if (fir, sec) in Chinese_split_map:
+                    if Chinese_split_map[(fir, sec)] == original_sensitive_words[index][-1]:
+                        right += 1
             self.text_ans.append((line, original_sensitive_words[index], self.original_line[left:right + 1]))
             self.total += 1
         else:
