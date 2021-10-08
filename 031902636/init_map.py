@@ -49,7 +49,7 @@ PINYIN_ALPHABET_LIST = [
     'xiong', 'xuan', 'zhua', 'zhuo', 'zhuai', 'zhuan', 'zhuang',
     'chua', 'chuo', 'chuai', 'chuan', 'chuang', 'shua', 'shuo',
     'shuai', 'shuan', 'shuang', 'rua', 'ruo', 'ruan', 'zuo',
-    'zuan', 'cuo', 'cuan', 'suo', 'suan', 'yuan'
+    'zuan', 'cuo', 'cuan', 'suo', 'suan', 'yuan', 'nve', 'lve'
 ]
 Pinyin_alphabet_map = {}
 
